@@ -1,0 +1,338 @@
+groups: []
+resources:
+- name: src
+  type: pull-request
+  source:
+    uri: git@github.com:hpcloud/cf-plugin-backup
+    branch: develop
+    access_token: {{github-access-token}}
+    private_key: {{git-private-key}}
+    repo: hpcloud/cf-plugin-backup
+- name: src-ci
+  type: git
+  source:
+    uri: git@github.com:hpcloud/cf-plugin-backup-ci.git
+    branch: master
+    private_key: {{git-private-key}}
+- name: swift.hcf-ci-concourse-cf-plugin-backup-check
+  type: swift
+  source:
+    auth_url: {{swift-auth-url}}
+    username: {{swift-access-key}}
+    api_key: {{swift-secret-key}}
+    domain: {{swift-domain}}
+    tenant_id: {{swift-tenant-id}}
+    container: hcf-ci-concourse-cf-plugin-backup-check
+    regex: 'cf-plugin-backup-(.*)\.tgz'
+    disable_tls_verify: true
+jobs:
+- name: vet
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [vet, pending, 'go vet check']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: vet
+    file: src-ci/tasks/vet.yaml
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [vet, success, 'go vet check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [vet, failure, 'go vet check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+- name: test
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [test, pending, 'go test check']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: test
+    privileged: true
+    file: src-ci/tasks/test.yaml
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [test, success, 'go test check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [test, failure, 'go test check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+- name: lint
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [lint, pending, 'go lint check']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: lint
+    file: src-ci/tasks/lint.yaml
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [lint, success, 'go lint check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [lint, failure, 'go lint check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+- name: format
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [format, pending, 'go format check']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: format
+    file: src-ci/tasks/format.yaml
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [format, success, 'go format check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [format, failure, 'go format check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+- name: build
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [build, pending, 'go build check']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: build
+    file: src-ci/tasks/build.yaml
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [build, success, 'go build check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [build, failure, 'go build check']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+- name: linux_dist
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+      passed: [build, test]
+    - get: src-ci
+      trigger: true
+      passed: [build, test]
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [linux_dist, pending, 'packaging']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: linux_dist
+    file: src-ci/tasks/linux_dist.yaml
+  - put: swift.hcf-ci-concourse-cf-plugin-backup-check
+    params:
+      from: 'cf-plugin-backup/cf-plugin-backup-(.*)\.tgz'
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [linux_dist, success, 'packaging']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [linux_dist, failure, 'packaging']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+- name: darwin_dist
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+      passed: [build, test]
+    - get: src-ci
+      trigger: true
+      passed: [build, test]
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [darwin_dist, pending, 'packaging']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: darwin_dist
+    file: src-ci/tasks/darwin_dist.yaml
+  - put: swift.hcf-ci-concourse-cf-plugin-backup-check
+    params:
+      from: 'cf-plugin-backup/cf-plugin-backup-(.*)\.tgz'
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [darwin_dist, success, 'packaging']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [darwin_dist, failure, 'packaging']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+- name: windows_dist
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+      passed: [build, test]
+    - get: src-ci
+      trigger: true
+      passed: [build, test]
+  - task: set-status-pending
+    file: src-ci/tasks/status.yaml
+    config:
+      run:
+        path: src-ci/tasks/status.sh
+        args: [windows_dist, pending, 'packaging']
+      params:
+        GITHUB_ACCESS_TOKEN: {{github-access-token}}
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: windows_dist
+    file: src-ci/tasks/windows_dist.yaml
+  - put: swift.hcf-ci-concourse-cf-plugin-backup-check
+    params:
+      from: 'cf-plugin-backup/cf-plugin-backup-(.*)\.tgz'
+    on_success:
+      task: set-status-success
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [windows_dist, success, 'packaging']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}
+    on_failure:
+      task: set-status-failed
+      file: src-ci/tasks/status.yaml
+      config:
+        run:
+          path: src-ci/tasks/status.sh
+          args: [windows_dist, failure, 'packaging']
+        params:
+          GITHUB_ACCESS_TOKEN: {{github-access-token}}

@@ -1,0 +1,110 @@
+groups: []
+resources:
+- name: src
+  type: git
+  source:
+    uri: git@github.com:hpcloud/cf-plugin-backup.git
+    branch: master
+    private_key: {{git-private-key}}
+- name: src-ci
+  type: git
+  source:
+    uri: git@github.com:hpcloud/cf-plugin-backup-ci.git
+    branch: master
+    private_key: {{git-private-key}}
+jobs:
+- name: vet
+  plan:
+  - aggregate:
+    - get: src-ci
+      trigger: true
+    - get: src
+      trigger: true
+  - task: vet
+    file: src-ci/tasks/vet.yaml
+- name: test
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: test
+    file: src-ci/tasks/test.yaml
+- name: lint
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: lint
+    file: src-ci/tasks/lint.yaml
+- name: format
+  plan:
+  - aggregate:
+    - get: src
+      trigger: true
+    - get: src-ci
+      trigger: true
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: format
+    file: src-ci/tasks/format.yaml
+- name: build
+  plan:
+  - aggregate:
+    - get: src
+      passed: [vet, lint, test]
+      trigger: true
+    - get: src-ci
+      passed: [vet, lint, test]
+      trigger: true
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: build
+    file: src-ci/tasks/build.yaml
+- name: linux_dist
+  plan:
+  - aggregate:
+    - get: src
+      passed: [build]
+      trigger: true
+    - get: src-ci
+      passed: [build]
+      trigger: true
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: linux_dist
+    file: src-ci/tasks/linux_dist.yaml
+- name: darwin_dist
+  plan:
+  - aggregate:
+    - get: src
+      passed: [build]
+      trigger: true
+    - get: src-ci
+      passed: [build]
+      trigger: true
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: darwin_dist
+    file: src-ci/tasks/darwin_dist.yaml
+- name: windows_dist
+  plan:
+  - aggregate:
+    - get: src
+      passed: [build]
+      trigger: true
+    - get: src-ci
+      passed: [build]
+      trigger: true
+  - task: tools
+    file: src-ci/tasks/tools.yaml
+  - task: windows_dist
+    file: src-ci/tasks/windows_dist.yaml
+

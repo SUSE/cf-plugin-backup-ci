@@ -1,0 +1,8 @@
+---
+platform: linux
+image: 'docker:///colstrom/octokitty#with-git'
+inputs:
+  - name: src # Referenced in the script below
+  - name: src-ci
+run:
+  path: src-ci/tasks/status.sh
