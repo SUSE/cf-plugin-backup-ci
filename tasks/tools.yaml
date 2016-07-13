@@ -1,6 +1,10 @@
 ---
 platform: linux
-image: 'docker:///golang#1.6.2-wheezy'
+image_resource: 
+  type: docker-image
+  source: 
+    repository: golang
+    tag: '1.6.2-wheezy'
 inputs:
   - name: src
     path: src/github.com/hpcloud/cf-plugin-backup
@@ -9,4 +13,4 @@ outputs:
   - name: tools
     path: bin
 run:
-  path: src-ci/tasks/tools.sh
+  path: src-ci/scripts/tools.sh

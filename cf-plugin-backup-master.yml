@@ -12,6 +12,33 @@ resources:
     uri: git@github.com:hpcloud/cf-plugin-backup-ci.git
     branch: master
     private_key: {{git-private-key}}
+- name: s3.hcf-ci-concourse-cf-plugin-backup-master-linux
+  type: s3
+  source:
+    region_name: us-west-2
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    bucket: concourse-hpe
+    regexp: cf-plugin-backup-(.*)\.tgz
+    private: true
+- name: s3.hcf-ci-concourse-cf-plugin-backup-master-darwin
+  type: s3
+  source:
+    region_name: us-west-2
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    bucket: concourse-hpe
+    regexp: cf-plugin-backup-(.*)\.tgz
+    private: true
+- name: s3.hcf-ci-concourse-cf-plugin-backup-master-windows
+  type: s3
+  source:
+    region_name: us-west-2
+    access_key_id: {{aws-access-key-id}}
+    secret_access_key: {{aws-secret-access-key}}
+    bucket: concourse-hpe
+    regexp: cf-plugin-backup-(.*)\.tgz
+    private: true
 jobs:
 - name: vet
   plan:
@@ -68,7 +95,7 @@ jobs:
     file: src-ci/tasks/tools.yaml
   - task: build
     file: src-ci/tasks/build.yaml
-- name: linux_dist
+- name: dist
   plan:
   - aggregate:
     - get: src
@@ -79,32 +106,14 @@ jobs:
       trigger: true
   - task: tools
     file: src-ci/tasks/tools.yaml
-  - task: linux_dist
-    file: src-ci/tasks/linux_dist.yaml
-- name: darwin_dist
-  plan:
-  - aggregate:
-    - get: src
-      passed: [build]
-      trigger: true
-    - get: src-ci
-      passed: [build]
-      trigger: true
-  - task: tools
-    file: src-ci/tasks/tools.yaml
-  - task: darwin_dist
-    file: src-ci/tasks/darwin_dist.yaml
-- name: windows_dist
-  plan:
-  - aggregate:
-    - get: src
-      passed: [build]
-      trigger: true
-    - get: src-ci
-      passed: [build]
-      trigger: true
-  - task: tools
-    file: src-ci/tasks/tools.yaml
-  - task: windows_dist
-    file: src-ci/tasks/windows_dist.yaml
-
+  - task: dist
+    file: src-ci/tasks/dist.yaml
+  - put: s3.hcf-ci-concourse-cf-plugin-backup-master-linux
+    params:
+      file: 'cf-plugin-backup/cf-plugin-backup-*-linux-*.tgz'
+  - put: s3.hcf-ci-concourse-cf-plugin-backup-master-darwin
+    params:
+      file: 'cf-plugin-backup/cf-plugin-backup-*-darwin-*.tgz'
+  - put: s3.hcf-ci-concourse-cf-plugin-backup-master-windows
+    params:
+      file: 'cf-plugin-backup/cf-plugin-backup-*-windows-*.tgz'
