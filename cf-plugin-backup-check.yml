@@ -4,10 +4,12 @@ resource_types:
   type: docker-image
   source:
     repository: heliondevops/concourse-github-pull-request
+
 - name: status
   type: docker-image
   source:
     repository: heliondevops/concourse-github-status
+
 resources:
 - name: src
   type: pull-request
@@ -15,46 +17,52 @@ resources:
     uri: git@github.com:hpcloud/cf-plugin-backup
     branch: master
     access_token: {{github-access-token}}
-    private_key: {{git-private-key}}
+    private_key: {{github-private-key}}
     repo: hpcloud/cf-plugin-backup
+
 - name: src-ci
   type: git
   source:
     uri: git@github.com:hpcloud/cf-plugin-backup-ci.git
     branch: master
-    private_key: {{git-private-key}}
+    private_key: {{github-private-key}}
+
 - name: status
   type: status
   source:
     access_token: {{github-access-token}}
     repo: hpcloud/cf-plugin-backup
+
 - name: s3.hcf-ci-concourse-cf-plugin-backup-check-linux
   type: s3
   source:
     region_name: us-west-2
-    access_key_id: {{aws-access-key-id}}
-    secret_access_key: {{aws-secret-access-key}}
+    access_key_id: {{s3-access-key}}
+    secret_access_key: {{s3-secret-key}}
     bucket: concourse-hpe
     regexp: cf-plugin-backup-(.*)\.tgz
     private: true
+
 - name: s3.hcf-ci-concourse-cf-plugin-backup-check-darwin
   type: s3
   source:
     region_name: us-west-2
-    access_key_id: {{aws-access-key-id}}
-    secret_access_key: {{aws-secret-access-key}}
+    access_key_id: {{s3-access-key}}
+    secret_access_key: {{s3-secret-key}}
     bucket: concourse-hpe
     regexp: cf-plugin-backup-(.*)\.tgz
     private: true
+
 - name: s3.hcf-ci-concourse-cf-plugin-backup-check-windows
   type: s3
   source:
     region_name: us-west-2
-    access_key_id: {{aws-access-key-id}}
-    secret_access_key: {{aws-secret-access-key}}
+    access_key_id: {{s3-access-key}}
+    secret_access_key: {{s3-secret-key}}
     bucket: concourse-hpe
     regexp: cf-plugin-backup-(.*)\.tgz
     private: true
+
 jobs:
 - name: vet
   plan:
@@ -265,7 +273,7 @@ jobs:
         state: success
   - put: s3.hcf-ci-concourse-cf-plugin-backup-check-windows
     params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*-windows-*.tgz'
+      file: 'cf-plugin-backup/cf-plugin-backup-*windows-*.tgz'
     on_failure:
       put: status
       params:
