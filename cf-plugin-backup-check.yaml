@@ -239,7 +239,7 @@ jobs:
     file: src-ci/tasks/dist.yaml
   - put: s3.hcf-ci-concourse-cf-plugin-backup-check-linux
     params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*-linux-*.tgz'
+      file: 'cf-plugin-backup/cf-plugin-backup-*linux-*.tgz'
     on_failure:
       put: status
       params:
@@ -256,7 +256,7 @@ jobs:
         state: success
   - put: s3.hcf-ci-concourse-cf-plugin-backup-check-darwin
     params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*-darwin-*.tgz'
+      file: 'cf-plugin-backup/cf-plugin-backup-*darwin-*.tgz'
     on_failure:
       put: status
       params:
