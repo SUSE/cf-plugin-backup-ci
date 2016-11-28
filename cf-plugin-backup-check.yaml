@@ -40,7 +40,7 @@ resources:
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
     bucket: concourse-hpe
-    regexp: cf-plugin-backup-(.*)\.tgz
+    regexp: checks/cf-plugin-backup-(.*)\.tgz
     private: true
 
 - name: s3.hcf-ci-concourse-cf-plugin-backup-check-darwin
@@ -50,7 +50,7 @@ resources:
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
     bucket: concourse-hpe
-    regexp: cf-plugin-backup-(.*)\.tgz
+    regexp: checks/cf-plugin-backup-(.*)\.tgz
     private: true
 
 - name: s3.hcf-ci-concourse-cf-plugin-backup-check-windows
@@ -60,7 +60,7 @@ resources:
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
     bucket: concourse-hpe
-    regexp: cf-plugin-backup-(.*)\.tgz
+    regexp: checks/cf-plugin-backup-(.*)\.tgz
     private: true
 
 jobs:
