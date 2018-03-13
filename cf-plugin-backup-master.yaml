@@ -3,45 +3,45 @@ resources:
 - name: src
   type: git
   source:
-    uri: git@github.com:hpcloud/cf-plugin-backup.git
+    uri: https://github.com/SUSE/cf-plugin-backup.git
     branch: master
     private_key: {{github-private-key}}
 
 - name: src-ci
   type: git
   source:
-    uri: git@github.com:hpcloud/cf-plugin-backup-ci.git
+    uri: https://github.com/SUSE/cf-plugin-backup-ci.git
     branch: master
     private_key: {{github-private-key}}
 
-- name: s3.hcf-ci-concourse-cf-plugin-backup-linux
+- name: s3.cf-plugin-backup.linux
   type: s3
   source:
     region_name: us-west-2
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
-    bucket: concourse-hpe
-    regexp: cf-plugin-backup-(.*)\.tgz
+    bucket: cf-opensusefs2
+    regexp: cf-plugin-backup/cf-plugin-backup-(.*linux-.*)\.tgz
     private: true
 
-- name: s3.hcf-ci-concourse-cf-plugin-backup-darwin
+- name: s3.cf-plugin-backup.darwin
   type: s3
   source:
     region_name: us-west-2
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
-    bucket: concourse-hpe
-    regexp: cf-plugin-backup-(.*)\.tgz
+    bucket: cf-opensusefs2
+    regexp: cf-plugin-backup/cf-plugin-backup-(.*darwin-.*)\.tgz
     private: true
 
-- name: s3.hcf-ci-concourse-cf-plugin-backup-windows
+- name: s3.cf-plugin-backup.windows
   type: s3
   source:
     region_name: us-west-2
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
-    bucket: concourse-hpe
-    regexp: cf-plugin-backup-(.*)\.tgz
+    bucket: cf-opensusefs2
+    regexp: cf-plugin-backup/cf-plugin-backup-(.*windows-.*)\.tgz
     private: true
 
 jobs:
@@ -113,12 +113,12 @@ jobs:
     file: src-ci/tasks/tools.yaml
   - task: dist
     file: src-ci/tasks/dist.yaml
-  - put: s3.hcf-ci-concourse-cf-plugin-backup-linux
+  - put: s3.cf-plugin-backup.linux
     params:
       file: 'cf-plugin-backup/cf-plugin-backup-*linux-*.tgz'
-  - put: s3.hcf-ci-concourse-cf-plugin-backup-darwin
+  - put: s3.cf-plugin-backup.darwin
     params:
       file: 'cf-plugin-backup/cf-plugin-backup-*darwin-*.tgz'
-  - put: s3.hcf-ci-concourse-cf-plugin-backup-windows
+  - put: s3.cf-plugin-backup.windows
     params:
       file: 'cf-plugin-backup/cf-plugin-backup-*windows-*.tgz'

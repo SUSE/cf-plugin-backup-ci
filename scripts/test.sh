@@ -2,4 +2,4 @@
 set -e
 PATH=$PATH:$PWD/bin
 GOPATH=$PWD
-make -C src/github.com/hpcloud/cf-plugin-backup test
+make -C src/github.com/SUSE/cf-plugin-backup test
