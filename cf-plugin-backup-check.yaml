@@ -3,27 +3,27 @@ resource_types:
 - name: pull-request
   type: docker-image
   source:
-    repository: heliondevops/concourse-github-pull-request
+    repository: splatform/concourse-github-pull-request
 
 - name: status
   type: docker-image
   source:
-    repository: heliondevops/concourse-github-status
+    repository: splatform/concourse-github-status
 
 resources:
 - name: src
   type: pull-request
   source:
-    uri: git@github.com:hpcloud/cf-plugin-backup
+    uri: git@github.com:SUSE/cf-plugin-backup.git
     branch: master
     access_token: {{github-access-token}}
     private_key: {{github-private-key}}
-    repo: hpcloud/cf-plugin-backup
+    repo: SUSE/cf-plugin-backup
 
 - name: src-ci
   type: git
   source:
-    uri: git@github.com:hpcloud/cf-plugin-backup-ci.git
+    uri: git@github.com:SUSE/cf-plugin-backup-ci.git
     branch: master
     private_key: {{github-private-key}}
 
@@ -31,36 +31,36 @@ resources:
   type: status
   source:
     access_token: {{github-access-token}}
-    repo: hpcloud/cf-plugin-backup
+    repo: SUSE/cf-plugin-backup
 
-- name: s3.hcf-ci-concourse-cf-plugin-backup-check-linux
+- name: s3.cf-plugin-backup-check.linux
   type: s3
   source:
     region_name: us-west-2
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
-    bucket: concourse-hpe
-    regexp: checks/cf-plugin-backup-(.*)\.tgz
+    bucket: cf-opensusefs2
+    regexp: cf-plugin-backup/checks/cf-plugin-backup-(.*linux-.*)\.tgz
     private: true
 
-- name: s3.hcf-ci-concourse-cf-plugin-backup-check-darwin
+- name: s3.cf-plugin-backup-check.darwin
   type: s3
   source:
     region_name: us-west-2
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
-    bucket: concourse-hpe
-    regexp: checks/cf-plugin-backup-(.*)\.tgz
+    bucket: cf-opensusefs2
+    regexp: cf-plugin-backup/checks/cf-plugin-backup-(.*darwin-.*)\.tgz
     private: true
 
-- name: s3.hcf-ci-concourse-cf-plugin-backup-check-windows
+- name: s3.cf-plugin-backup-check.windows
   type: s3
   source:
     region_name: us-west-2
     access_key_id: {{s3-access-key}}
     secret_access_key: {{s3-secret-key}}
-    bucket: concourse-hpe
-    regexp: checks/cf-plugin-backup-(.*)\.tgz
+    bucket: cf-opensusefs2
+    regexp: cf-plugin-backup/checks/cf-plugin-backup-(.*windows-.*)\.tgz
     private: true
 
 jobs:
@@ -237,7 +237,7 @@ jobs:
     file: src-ci/tasks/tools.yaml
   - task: dist
     file: src-ci/tasks/dist.yaml
-  - put: s3.hcf-ci-concourse-cf-plugin-backup-check-linux
+  - put: s3.cf-plugin-backup-check.linux
     params:
       file: 'cf-plugin-backup/cf-plugin-backup-*linux-*.tgz'
     on_failure:
@@ -254,7 +254,7 @@ jobs:
         description: packaging
         path: src
         state: success
-  - put: s3.hcf-ci-concourse-cf-plugin-backup-check-darwin
+  - put: s3.cf-plugin-backup-check.darwin
     params:
       file: 'cf-plugin-backup/cf-plugin-backup-*darwin-*.tgz'
     on_failure:
@@ -271,7 +271,7 @@ jobs:
         description: packaging
         path: src
         state: success
-  - put: s3.hcf-ci-concourse-cf-plugin-backup-check-windows
+  - put: s3.cf-plugin-backup-check.windows
     params:
       file: 'cf-plugin-backup/cf-plugin-backup-*windows-*.tgz'
     on_failure:
