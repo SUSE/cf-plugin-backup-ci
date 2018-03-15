@@ -1,3 +1,13 @@
+shared:
+  s3-configs: &s3-configs
+    endpoint: ((s3-endpoint))
+    access_key_id: ((s3-access-key))
+    secret_access_key: ((s3-secret-key))
+    bucket: ((s3-bucket))
+    disable_ssl: ((s3-disable-ssl))
+    regexp: ((s3-prefix))cf-plugin-backup-(.*linux-.*)\.tgz
+    private: true
+
 groups: []
 resource_types:
 - name: pull-request
@@ -14,54 +24,54 @@ resources:
 - name: src
   type: pull-request
   source:
-    uri: git@github.com:SUSE/cf-plugin-backup.git
-    branch: master
-    access_token: {{github-access-token}}
-    private_key: {{github-private-key}}
-    repo: SUSE/cf-plugin-backup
+    uri: ((src-repo))
+    branch: ((src-branch))
+    access_token: ((github-access-token))
+    private_key: ((github-private-key))
+    repo: ((src-name))
 
 - name: src-ci
   type: git
   source:
-    uri: git@github.com:SUSE/cf-plugin-backup-ci.git
-    branch: master
-    private_key: {{github-private-key}}
+    uri: ((ci-repo))
+    branch: ((ci-branch))
+    private_key: ((github-private-key))
 
 - name: status
   type: status
   source:
-    access_token: {{github-access-token}}
-    repo: SUSE/cf-plugin-backup
+    access_token: ((github-access-token))
+    repo: ((src-name))
 
-- name: s3.cf-plugin-backup-check.linux
+- name: s3.cf-plugin-backup-check.linux-amd64
   type: s3
   source:
-    region_name: us-west-2
-    access_key_id: {{s3-access-key}}
-    secret_access_key: {{s3-secret-key}}
-    bucket: cf-opensusefs2
-    regexp: cf-plugin-backup/checks/cf-plugin-backup-(.*linux-.*)\.tgz
-    private: true
+    <<: *s3-configs
+    regexp: ((s3-prefix))checks/cf-plugin-backup-(.*linux-amd64.*)\.tgz
 
-- name: s3.cf-plugin-backup-check.darwin
+- name: s3.cf-plugin-backup-check.darwin-amd64
   type: s3
   source:
-    region_name: us-west-2
-    access_key_id: {{s3-access-key}}
-    secret_access_key: {{s3-secret-key}}
-    bucket: cf-opensusefs2
-    regexp: cf-plugin-backup/checks/cf-plugin-backup-(.*darwin-.*)\.tgz
-    private: true
+    <<: *s3-configs
+    regexp: ((s3-prefix))checks/cf-plugin-backup-(.*darwin-amd64.*)\.tgz
 
-- name: s3.cf-plugin-backup-check.windows
+- name: s3.cf-plugin-backup-check.windows-amd64
   type: s3
   source:
-    region_name: us-west-2
-    access_key_id: {{s3-access-key}}
-    secret_access_key: {{s3-secret-key}}
-    bucket: cf-opensusefs2
-    regexp: cf-plugin-backup/checks/cf-plugin-backup-(.*windows-.*)\.tgz
-    private: true
+    <<: *s3-configs
+    regexp: ((s3-prefix))checks/cf-plugin-backup-(.*windows-amd64.*)\.tgz
+
+- name: s3.cf-plugin-backup-check.linux-386
+  type: s3
+  source:
+    <<: *s3-configs
+    regexp: ((s3-prefix))checks/cf-plugin-backup-(.*linux-386.*)\.tgz
+
+- name: s3.cf-plugin-backup-check.windows-386
+  type: s3
+  source:
+    <<: *s3-configs
+    regexp: ((s3-prefix))checks/cf-plugin-backup-(.*windows-386.*)\.tgz
 
 jobs:
 - name: vet
@@ -237,43 +247,22 @@ jobs:
     file: src-ci/tasks/tools.yaml
   - task: dist
     file: src-ci/tasks/dist.yaml
-  - put: s3.cf-plugin-backup-check.linux
-    params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*linux-*.tgz'
-    on_failure:
-      put: status
+  - aggregate:
+    - put: s3.cf-plugin-backup-check.linux-amd64
       params:
-        context: dist
-        description: packaging
-        path: src
-        state: failure
-    on_success:
-      put: status
+        file: 'cf-plugin-backup/cf-plugin-backup-*linux-amd64*.tgz'
+    - put: s3.cf-plugin-backup-check.darwin-amd64
       params:
-        context: dist
-        description: packaging
-        path: src
-        state: success
-  - put: s3.cf-plugin-backup-check.darwin
-    params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*darwin-*.tgz'
-    on_failure:
-      put: status
+        file: 'cf-plugin-backup/cf-plugin-backup-*darwin-amd64*.tgz'
+    - put: s3.cf-plugin-backup-check.windows-amd64
       params:
-        context: dist
-        description: packaging
-        path: src
-        state: failure
-    on_success:
-      put: status
+        file: 'cf-plugin-backup/cf-plugin-backup-*windows-amd64*.tgz'
+    - put: s3.cf-plugin-backup-check.linux-386
       params:
-        context: dist
-        description: packaging
-        path: src
-        state: success
-  - put: s3.cf-plugin-backup-check.windows
-    params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*windows-*.tgz'
+        file: 'cf-plugin-backup/cf-plugin-backup-*linux-386*.tgz'
+    - put: s3.cf-plugin-backup-check.windows-386
+      params:
+        file: 'cf-plugin-backup/cf-plugin-backup-*windows-386*.tgz'
     on_failure:
       put: status
       params:

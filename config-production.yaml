@@ -1,7 +1,8 @@
 # Production configuration for the cf-plugin-backup pipelines
 # Note that the secrets are not here; they are in $CONCOURSE_SECRETS_FILE
 
-src-repo: https://github.com/SUSE/cf-plugin-backup.git
+src-name: SUSE/cf-plugin-backup
+src-repo: git@github.com:SUSE/cf-plugin-backup.git
 src-branch: master
 
 ci-repo: https://github.com/SUSE/cf-plugin-backup-ci.git
