@@ -1,48 +1,58 @@
+shared:
+  s3-configs: &s3-configs
+    endpoint: ((s3-endpoint))
+    access_key_id: ((s3-access-key))
+    secret_access_key: ((s3-secret-key))
+    bucket: ((s3-bucket))
+    disable_ssl: ((s3-disable-ssl))
+    regexp: ((s3-prefix))cf-plugin-backup-(.*linux-.*)\.tgz
+    private: true
+
 groups: []
 resources:
 - name: src
   type: git
   source:
-    uri: https://github.com/SUSE/cf-plugin-backup.git
-    branch: master
-    private_key: {{github-private-key}}
+    uri: ((src-repo))
+    branch: ((src-branch))
+    private_key: ((github-private-key))
 
 - name: src-ci
   type: git
   source:
-    uri: https://github.com/SUSE/cf-plugin-backup-ci.git
-    branch: master
-    private_key: {{github-private-key}}
+    uri: ((ci-repo))
+    branch: ((ci-branch))
+    private_key: ((github-private-key))
 
-- name: s3.cf-plugin-backup.linux
+- name: s3.cf-plugin-backup.linux-amd64
   type: s3
   source:
-    region_name: us-west-2
-    access_key_id: {{s3-access-key}}
-    secret_access_key: {{s3-secret-key}}
-    bucket: cf-opensusefs2
-    regexp: cf-plugin-backup/cf-plugin-backup-(.*linux-.*)\.tgz
-    private: true
+    <<: *s3-configs
+    regexp: ((s3-prefix))cf-plugin-backup-(.*linux-amd64.*)\.tgz
 
-- name: s3.cf-plugin-backup.darwin
+- name: s3.cf-plugin-backup.darwin-amd64
   type: s3
   source:
-    region_name: us-west-2
-    access_key_id: {{s3-access-key}}
-    secret_access_key: {{s3-secret-key}}
-    bucket: cf-opensusefs2
-    regexp: cf-plugin-backup/cf-plugin-backup-(.*darwin-.*)\.tgz
-    private: true
+    <<: *s3-configs
+    regexp: ((s3-prefix))cf-plugin-backup-(.*darwin-amd64.*)\.tgz
 
-- name: s3.cf-plugin-backup.windows
+- name: s3.cf-plugin-backup.windows-amd64
   type: s3
   source:
-    region_name: us-west-2
-    access_key_id: {{s3-access-key}}
-    secret_access_key: {{s3-secret-key}}
-    bucket: cf-opensusefs2
-    regexp: cf-plugin-backup/cf-plugin-backup-(.*windows-.*)\.tgz
-    private: true
+    <<: *s3-configs
+    regexp: ((s3-prefix))cf-plugin-backup-(.*windows-amd64.*)\.tgz
+
+- name: s3.cf-plugin-backup.linux-386
+  type: s3
+  source:
+    <<: *s3-configs
+    regexp: ((s3-prefix))cf-plugin-backup-(.*linux-386.*)\.tgz
+
+- name: s3.cf-plugin-backup.windows-386
+  type: s3
+  source:
+    <<: *s3-configs
+    regexp: ((s3-prefix))cf-plugin-backup-(.*windows-386.*)\.tgz
 
 jobs:
 - name: vet
@@ -91,10 +101,10 @@ jobs:
   plan:
   - aggregate:
     - get: src
-      passed: [vet, lint, test]
+      passed: [vet, test, lint, format]
       trigger: true
     - get: src-ci
-      passed: [vet, lint, test]
+      passed: [vet, test, lint, format]
       trigger: true
   - task: tools
     file: src-ci/tasks/tools.yaml
@@ -113,12 +123,19 @@ jobs:
     file: src-ci/tasks/tools.yaml
   - task: dist
     file: src-ci/tasks/dist.yaml
-  - put: s3.cf-plugin-backup.linux
-    params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*linux-*.tgz'
-  - put: s3.cf-plugin-backup.darwin
-    params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*darwin-*.tgz'
-  - put: s3.cf-plugin-backup.windows
-    params:
-      file: 'cf-plugin-backup/cf-plugin-backup-*windows-*.tgz'
+  - aggregate:
+    - put: s3.cf-plugin-backup.linux-amd64
+      params:
+        file: 'cf-plugin-backup/cf-plugin-backup-*linux-amd64*.tgz'
+    - put: s3.cf-plugin-backup.darwin-amd64
+      params:
+        file: 'cf-plugin-backup/cf-plugin-backup-*darwin-amd64*.tgz'
+    - put: s3.cf-plugin-backup.windows-amd64
+      params:
+        file: 'cf-plugin-backup/cf-plugin-backup-*windows-amd64*.tgz'
+    - put: s3.cf-plugin-backup.linux-386
+      params:
+        file: 'cf-plugin-backup/cf-plugin-backup-*linux-386*.tgz'
+    - put: s3.cf-plugin-backup.windows-386
+      params:
+        file: 'cf-plugin-backup/cf-plugin-backup-*windows-386*.tgz'

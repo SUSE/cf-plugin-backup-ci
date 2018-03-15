@@ -4,7 +4,7 @@ image_resource:
   type: docker-image
   source: 
     repository: golang
-    tag: '1.7.3-wheezy'
+    tag: '1'
 inputs:
   - name: src
     path: src/github.com/SUSE/cf-plugin-backup
