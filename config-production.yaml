@@ -1,0 +1,15 @@
+# Production configuration for the cf-plugin-backup pipelines
+# Note that the secrets are not here; they are in $CONCOURSE_SECRETS_FILE
+
+src-repo: https://github.com/SUSE/cf-plugin-backup.git
+src-branch: master
+
+ci-repo: https://github.com/SUSE/cf-plugin-backup-ci.git
+ci-branch:  master
+
+s3-endpoint: ~
+s3-access-key: *aws-access-key
+s3-secret-key: *aws-secret-key
+s3-bucket: cf-opensusefs2
+s3-prefix: cf-plugin-backup/
+s3-disable-ssl: false

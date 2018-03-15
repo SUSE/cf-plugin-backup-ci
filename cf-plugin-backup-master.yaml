@@ -3,16 +3,16 @@ resources:
 - name: src
   type: git
   source:
-    uri: https://github.com/SUSE/cf-plugin-backup.git
-    branch: master
-    private_key: {{github-private-key}}
+    uri: ((src-repo))
+    branch: ((src-branch))
+    private_key: ((github-private-key))
 
 - name: src-ci
   type: git
   source:
-    uri: https://github.com/SUSE/cf-plugin-backup-ci.git
-    branch: master
-    private_key: {{github-private-key}}
+    uri: ((ci-repo))
+    branch: ((ci-branch))
+    private_key: ((github-private-key))
 
 - name: s3.cf-plugin-backup.linux
   type: s3
