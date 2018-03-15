@@ -101,10 +101,10 @@ jobs:
   plan:
   - aggregate:
     - get: src
-      passed: [vet, lint, test]
+      passed: [vet, test, lint, format]
       trigger: true
     - get: src-ci
-      passed: [vet, lint, test]
+      passed: [vet, test, lint, format]
       trigger: true
   - task: tools
     file: src-ci/tasks/tools.yaml
