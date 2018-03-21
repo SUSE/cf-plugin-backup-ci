@@ -5,7 +5,7 @@ PROJ_NAME="cf-plugin-backup"
 
 usage() {
     cat <<EOF
-Usage: $0 <master|check> [config]
+Usage: $0 <master|check|release> [config]
 
 Config is production by default.  If it is given, the pipeline will be named
 cf-plugin-backup-master-<thing> instead.

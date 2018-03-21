@@ -5,7 +5,6 @@ shared:
     secret_access_key: ((s3-secret-key))
     bucket: ((s3-bucket))
     disable_ssl: ((s3-disable-ssl))
-    regexp: ((s3-prefix))cf-plugin-backup-(.*linux-.*)\.tgz
     private: true
 
 groups: []
@@ -16,6 +15,7 @@ resources:
     uri: ((src-repo-ref))
     branch: ((src-branch))
     private_key: ((github-private-key))
+    tag_filter: '[[:digit:]]*[.][[:digit:]]*[.][[:digit:]]*'
 
 - name: src-ci
   type: git
@@ -24,35 +24,19 @@ resources:
     branch: ((ci-branch))
     private_key: ((github-private-key))
 
-- name: s3.cf-plugin-backup.linux-amd64
+- name: s3.cf-plugin-backup.release
   type: s3
   source:
     <<: *s3-configs
-    regexp: ((s3-prefix))cf-plugin-backup-(.*linux-amd64.*)\.tgz
+    regexp: ((s3-prefix))cf-plugin-backup-(.*release.*)\.tgz
 
-- name: s3.cf-plugin-backup.darwin-amd64
-  type: s3
+- name: src-release
+  type: github-release
   source:
-    <<: *s3-configs
-    regexp: ((s3-prefix))cf-plugin-backup-(.*darwin-amd64.*)\.tgz
-
-- name: s3.cf-plugin-backup.windows-amd64
-  type: s3
-  source:
-    <<: *s3-configs
-    regexp: ((s3-prefix))cf-plugin-backup-(.*windows-amd64.*)\.tgz
-
-- name: s3.cf-plugin-backup.linux-386
-  type: s3
-  source:
-    <<: *s3-configs
-    regexp: ((s3-prefix))cf-plugin-backup-(.*linux-386.*)\.tgz
-
-- name: s3.cf-plugin-backup.windows-386
-  type: s3
-  source:
-    <<: *s3-configs
-    regexp: ((s3-prefix))cf-plugin-backup-(.*windows-386.*)\.tgz
+    owner: ((src-owner))
+    repository: ((src-repo))
+    access_token: ((github-access-token))
+    drafts: true
 
 jobs:
 - name: vet
@@ -110,7 +94,7 @@ jobs:
     file: src-ci/tasks/tools.yaml
   - task: build
     file: src-ci/tasks/build.yaml
-- name: dist
+- name: release
   plan:
   - aggregate:
     - get: src
@@ -121,21 +105,16 @@ jobs:
       trigger: true
   - task: tools
     file: src-ci/tasks/tools.yaml
-  - task: dist
-    file: src-ci/tasks/dist.yaml
+  - task: release
+    file: src-ci/tasks/release.yaml
   - aggregate:
-    - put: s3.cf-plugin-backup.linux-amd64
+    - put: src-release
       params:
-        file: 'cf-plugin-backup/cf-plugin-backup-*linux-amd64*.tgz'
-    - put: s3.cf-plugin-backup.darwin-amd64
+        name: release/name
+        tag:  release/tag
+        body: release/body
+        globs:
+        - release/assets/*
+    - put: s3.cf-plugin-backup.release
       params:
-        file: 'cf-plugin-backup/cf-plugin-backup-*darwin-amd64*.tgz'
-    - put: s3.cf-plugin-backup.windows-amd64
-      params:
-        file: 'cf-plugin-backup/cf-plugin-backup-*windows-amd64*.tgz'
-    - put: s3.cf-plugin-backup.linux-386
-      params:
-        file: 'cf-plugin-backup/cf-plugin-backup-*linux-386*.tgz'
-    - put: s3.cf-plugin-backup.windows-386
-      params:
-        file: 'cf-plugin-backup/cf-plugin-backup-*windows-386*.tgz'
+        file: 'cf-plugin-backup/cf-plugin-backup-*release*.tgz'
