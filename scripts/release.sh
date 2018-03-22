@@ -43,7 +43,7 @@ do
 	-C release/assets/ \
 	--strip-components=1 \
 	--overwrite \
-	--transform="s@/cf-plugin-backup@/$(basename ${path%%.tgz})@"
+	--transform="s@/cf-plugin-backup@/$(basename ${path} .tgz)@"
 done
 
 # And calculate the checksums for all the executables
