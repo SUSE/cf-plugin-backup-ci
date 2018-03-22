@@ -14,9 +14,10 @@ echo TAG_: ${TAG}
 echo LAST: ${LAST_TAG}
 
 # Assemble configuration data for `out` to git-release resource.
-echo > release/name ${TAG}
-echo > release/tag  ${TAG}
-echo > release/body "${NAME}: Release ${TAG}"
+echo > release/commitish ${TAG}
+echo > release/name      ${TAG}
+echo > release/tag       ${TAG}
+echo >  release/body  "${NAME}: Release ${TAG}"
 echo >> release/body ""
 git -C ${SRC} log --reverse --pretty=%s --merges ${LAST_TAG}...${TAG} \
     >> release/body
