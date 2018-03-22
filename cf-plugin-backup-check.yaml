@@ -24,7 +24,7 @@ resources:
 - name: src
   type: pull-request
   source:
-    uri: ((src-repo))
+    uri: ((src-repo-ref))
     branch: ((src-branch))
     access_token: ((github-access-token))
     private_key: ((github-private-key))

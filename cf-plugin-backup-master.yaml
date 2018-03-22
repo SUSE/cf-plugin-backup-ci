@@ -13,7 +13,7 @@ resources:
 - name: src
   type: git
   source:
-    uri: ((src-repo))
+    uri: ((src-repo-ref))
     branch: ((src-branch))
     private_key: ((github-private-key))
 
