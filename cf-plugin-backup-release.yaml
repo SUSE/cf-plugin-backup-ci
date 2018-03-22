@@ -1,12 +1,3 @@
-shared:
-  s3-configs: &s3-configs
-    endpoint: ((s3-endpoint))
-    access_key_id: ((s3-access-key))
-    secret_access_key: ((s3-secret-key))
-    bucket: ((s3-bucket))
-    disable_ssl: ((s3-disable-ssl))
-    private: true
-
 groups: []
 resources:
 - name: src
@@ -27,8 +18,13 @@ resources:
 - name: s3.cf-plugin-backup.release
   type: s3
   source:
-    <<: *s3-configs
+    access_key_id: ((s3-access-key))
+    bucket: ((s3-bucket))
+    disable_ssl: ((s3-disable-ssl))
+    endpoint: ((s3-endpoint))
+    private: true
     regexp: ((s3-prefix))cf-plugin-backup-(.*release.*)\.tgz
+    secret_access_key: ((s3-secret-key))
 
 - name: src-release
   type: github-release
