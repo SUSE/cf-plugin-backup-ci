@@ -8,8 +8,6 @@ TOP=$PWD
 # from.
 FORK=SUSE/cli-plugin-repo
 
-HUB_RELEASE=https://github.com/github/hub/releases/download/v2.3.0-pre10/hub-linux-amd64-2.3.0-pre10.tgz
-
 if [ -z "$UPSTREAM"  ]; then
   echo "Don't know where to make the pull request, UPSTREAM is undefined"
   exit 1
@@ -146,8 +144,7 @@ echo
 echo
 echo Creating the pull request ...
 
-# Get the "hub" cli -- https://hub.github.com/hub.1.html
-curl -L ${HUB_RELEASE} | tar xvz --wildcards --strip-components=2 '*/bin/hub'
+tar xvzf hub-release/hub-linux-amd64-* --wildcards --strip-components=2 '*/bin/hub'
 HUB="${PWD}/hub"
 chmod +x ${HUB}
 
@@ -169,7 +166,7 @@ cd src/code.cloudfoundry.org/cli-plugin-repo
 # Admin stuff for the checkout. Notably, point it to the SUSE fork,
 # that is where we will push the changes to.
 
-${HUB} config user.email "cf-ci-bot@suse.de"
+${HUB} config user.email "${GITHUB_USER}"
 ${HUB} config user.name  "${GITHUB_USER}"
 ${HUB} remote add -p FORK ${FORK}
 

@@ -26,6 +26,14 @@ resources:
     regexp: ((s3-prefix))cf-plugin-backup-(.*release.*)\.tgz
     secret_access_key: ((s3-secret-key))
 
+- name: hub-release
+  type: github-release
+  source:
+    owner: github
+    repository: hub
+    access_token: ((github-access-token))
+    pre_release: true
+
 - name: src-release
   type: github-release
   source:
@@ -119,6 +127,11 @@ jobs:
   - aggregate:
     # NOTE: None of the input have trigger
     #       Because this *must* be a manual step
+    - get: hub-release
+      params:
+        version: v2.3.0-pre10
+        globs:
+        - hub-linux-amd64-*
     - get: src-release
     - get: src-ci
   - task: publish

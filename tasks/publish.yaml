@@ -6,6 +6,7 @@ image_resource:
     repository: golang
     tag: '1'
 inputs:
+  - name: hub-release
   - name: src-release
     path: release
   - name: src-ci
