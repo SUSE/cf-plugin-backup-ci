@@ -114,3 +114,21 @@ jobs:
     - put: s3.cf-plugin-backup.release
       params:
         file: 'cf-plugin-backup/cf-plugin-backup-*release*.tgz'
+- name: publish
+  plan:
+  - aggregate:
+    # NOTE: None of the input have trigger
+    #       Because this *must* be a manual step
+    - get: src-release
+    - get: src-ci
+  - task: publish
+    file: src-ci/tasks/publish.yaml
+    params:
+      CONTACT: placeholder
+      NAME: SUSE LLC
+      HOMEURL: https://www.suse.com/
+      COMPANY: SUSE LLC
+      UPSTREAM: ((upstream))
+      GITHUB_USER: ((github-username))
+      GITHUB_TOKEN: ((github-access-token))
+      GITHUB_KEY: ((github-private-key))
