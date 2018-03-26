@@ -103,10 +103,8 @@ jobs:
   - aggregate:
     - get: src
       passed: [build]
-      trigger: true
     - get: src-ci
       passed: [build]
-      trigger: true
   - task: tools
     file: src-ci/tasks/tools.yaml
   - task: release
