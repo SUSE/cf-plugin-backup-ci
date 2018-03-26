@@ -131,6 +131,7 @@ jobs:
         globs:
         - hub-linux-amd64-*
     - get: src-release
+      passed: [release]
     - get: src-ci
   - task: publish
     file: src-ci/tasks/publish.yaml
