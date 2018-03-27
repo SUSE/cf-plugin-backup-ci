@@ -1,6 +1,8 @@
 # Production configuration for the cf-plugin-backup pipelines
 # Note that the secrets are not here; they are in $CONCOURSE_SECRETS_FILE
 
+upstream: cloudfoundry/cli-plugin-repo
+
 src-owner:                   SUSE
 src-repo:                         cf-plugin-backup
 src-name:                    SUSE/cf-plugin-backup
